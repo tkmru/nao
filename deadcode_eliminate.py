@@ -39,8 +39,9 @@ class asm_colorizer_t(object):
 
     def colorize(self, lines):
         slines = lines.split("\n")
+        #print lines
         for line in slines:
-            #print line
+            print line
             line = line.rstrip()
             if not line:
                 self.add_line()
@@ -87,7 +88,6 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         # Create the customview
         if not idaapi.simplecustviewer_t.Create(self, "dead code"):
             return False
-
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(["ret"])
         self.register_list    = idautils.GetRegisterList()
@@ -108,12 +108,10 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
 
     def colorize_file(self, ea):
         try:
-            #f = open(fn, "r")
-            #lines = list(FuncItems(ea))
-            #f.close()
+            E = list(FuncItems(ea))
             lines=""
-            for ea in E:
-                lines += GetDisasm(ea)+"\n"  
+            for e in E:
+                lines += GetDisasm(e)+"\n"  
             self.ClearLines()
             self.colorize(lines)
             return True
@@ -191,11 +189,8 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
 
 # -----------------------------------------------------------------------
 def main():
-    #fn = idc.AskFile(0, "*.asm", "Select ASM file to view")
-    #if not fn:
-    #    return
     view = asmview_t()
-    if not view.Create(ScreenEA):
+    if not view.Create(ScreenEA()):
         return
     view.Show()
     return view
