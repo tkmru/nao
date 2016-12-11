@@ -39,9 +39,7 @@ class asm_colorizer_t(object):
 
     def colorize(self, lines):
         slines = lines.split("\n")
-        #print lines
         for line in slines:
-            print line
             line = line.rstrip()
             if not line:
                 self.add_line()
@@ -109,12 +107,25 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
     def colorize_file(self, ea):
         try:
             E = list(FuncItems(ea))
-            lines=""
-            for e in E:
-                lines += GetDisasm(e)+"\n"  
+            lines = ""
+            for i, e in enumerate(E):
+                lines += GetDisasm(e) + "\n"
+                try:
+                    size = E[i+1] - e
+                except IndexError:
+                    last_row_begin_addr = e
+                    last_row_end_addr = FindFuncEnd(last_row_begin_addr)
+                    size = last_row_end_addr - last_row_begin_addr
+
+                opcode = ''
+                for i in range(size):
+                    opcode += hex(GetOriginalByte(e + i))
+                print size, opcode
+
             self.ClearLines()
             self.colorize(lines)
             return True
+
         except:
             return False
 
@@ -163,7 +174,7 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         @param vkey: Virtual key code
         @param shift: Shift flag
         @return Boolean. True if you handled the event
-        
+
         # ESCAPE
         if vkey == 27:
             self.Close()
