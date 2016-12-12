@@ -1,7 +1,9 @@
 # ここにpluginの名前が入る
 ## Requirement
 - IDAPython
-- z3
+- [Unicorn](http://www.unicorn-engine.org/) and Python binding
 
-## How to Install
-Please put Z3 to `C://z3py`. This plugin import `C://z3py`.
+## How to Install Unicorn
+Please follow the link.
+
+[Download – Unicorn – The ultimate CPU emulator](http://www.unicorn-engine.org/download/)
