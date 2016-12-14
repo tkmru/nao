@@ -141,7 +141,8 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
 
             return True
 
-        except:
+        except Exception, e:
+            print e
             return False
 
     def add_line(self, s=None):
