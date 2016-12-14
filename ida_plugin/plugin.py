@@ -8,6 +8,7 @@ import idautils
 import idc
 import os
 import binascii
+import eliminate
 
 # ----------------------------------------------------------------------
 class asm_colorizer_t(object):
@@ -107,7 +108,7 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
 
     def colorize_file(self, ea):
         try:
-            instructions = []
+            instruction_list = []
             address_list = list(FuncItems(ea))
             lines = ""
             for i, row_begin_addr in enumerate(address_list):
@@ -115,6 +116,7 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
                 lines += disasm + "\n"
                 try:
                     size = address_list[i+1] - row_begin_addr
+
                 except IndexError:
                     last_row_begin_addr = row_begin_addr
                     last_row_end_addr = FindFuncEnd(last_row_begin_addr)
@@ -126,11 +128,17 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
                     opcode = binascii.a2b_hex(hex(int_opcode)[2:].zfill(2))
                     row_opcode += opcode
 
-                instructions.append((row_begin_addr, row_opcode, disasm))
+                instruction_list.append((row_begin_addr, row_opcode, disasm))
+
+            checked_instruction_list = eliminate.check_deadcode(instruction_list)
+
+            lines = ''
+            for i in checked_instruction_list:
+                lines += i[2] + '\n'
 
             self.ClearLines()
             self.colorize(lines)
-            print instructions
+
             return True
 
         except:
