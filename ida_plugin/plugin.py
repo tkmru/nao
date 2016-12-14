@@ -1,8 +1,6 @@
 # -----------------------------------------------------------------------
-# This is an example illustrating how to use customview in Python
-# The sample will allow you to open an assembly file and display it in color
-# (c) Hex-Rays
 #
+
 import idaapi
 import idautils
 import idc
@@ -84,22 +82,37 @@ class asm_colorizer_t(object):
 
 # -----------------------------------------------------------------------
 class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
-    def Create(self, ea):
+    def Create(self):
         # Create the customview
-        if not idaapi.simplecustviewer_t.Create(self, "dead code"):
+        ea = ScreenEA()
+        # Create the customview
+        if not idaapi.simplecustviewer_t.Create(self, "%s - dead code eliminate" % (idc.GetFunctionName(ScreenEA()))):
             return False
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(["ret"])
         self.register_list    = idautils.GetRegisterList()
         self.register_list.extend(["eax", "ebx", "ecx", "edx", "edi", "esi", "ebp", "esp"])
 
+        f = idaapi.get_func(ScreenEA())
+        self.fc = idaapi.FlowChart(f)
+        self.block_list = []
+        for block in self.fc:
+            self.block_list.append(format(block.startEA,'x').upper())
+
         self.reload_file(ea)
 
-        self.id_refresh = self.AddPopupMenu("Refresh")
-        self.id_close   = self.AddPopupMenu("Close")
+        self.id_jmp = self.AddPopupMenu("Jump")
 
         return True
 
+
+    def jump(self):
+        str_addr = self.GetCurrentWord(0).lstrip('loc_')
+        for i in xrange(self.Count()):
+            search_addr = self.GetLine(i)[0].rsplit(":")[0].replace("\x01\x0c","").replace("\x02\x0c","")
+            if str_addr == search_addr:
+                self.Jump(i,0,0)     
+   
     def reload_file(self, ea):
         if not self.colorize_file(ea):
             self.Close()
@@ -147,6 +160,12 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
     def add_line(self, s=None):
         if not s:
             s = ""
+
+        target = s.rsplit(":")[0].replace("\x01\x0c","").replace("\x02\x0c","")
+        if target in self.block_list:
+            self.AddLine("----------------------------------------------------------------")
+            if idc.Name(int(target, 16))!= '':
+                self.AddLine(idc.Name(int(target, 16)))    
         self.AddLine(s)
 
     def as_comment(self, s):
@@ -176,11 +195,8 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         @param menu_id: ID previously registered with AddPopupMenu()
         @return: Boolean
         """
-        if self.id_refresh == menu_id:
-            return self.reload_file()
-        elif self.id_close == menu_id:
-            self.Close()
-            return True
+        if self.id_jmp == menu_id:
+            return self.jump()
         return False
 
     def OnKeydown(self, vkey, shift):
@@ -215,10 +231,21 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
 
 # -----------------------------------------------------------------------
 def main():
-    view = asmview_t()
-    if not view.Create(ScreenEA()):
-        return
-    view.Show()
+    def cb():
+        view = asmview_t()
+        #if not view.Create():
+        #    return
+        view.Create()
+        view.Show()
+        
+    #cb()    #if you want create deadcode_eliminate view, call cb() in main()
+    ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "dead code eliminate", "Shift-D", 0, cb, ())
+    if ex_addmenu_item_ctx is None:
+        print("Failed to add menu!")
+        #del ex_addmenu_item_ctx
+    else:
+        print("Menu added successfully.")
+        return True
+    
     return view
-
-main()
+view = main()
