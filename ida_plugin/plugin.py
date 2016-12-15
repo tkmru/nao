@@ -1,6 +1,3 @@
-# -----------------------------------------------------------------------
-#
-
 import idaapi
 import idautils
 import idc
@@ -8,7 +5,7 @@ import os
 import binascii
 import eliminate
 
-# ----------------------------------------------------------------------
+
 class asm_colorizer_t(object):
     def is_id(self, ch):
         return ch == '_' or ch.isalpha() or '0' <= ch <= '9'
@@ -80,7 +77,7 @@ class asm_colorizer_t(object):
                     x += 1
             self.add_line(s)
 
-# -----------------------------------------------------------------------
+
 class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
     def Create(self):
         # Create the customview
@@ -140,13 +137,13 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
                 opcode = binascii.a2b_hex(hex(int_opcode)[2:].zfill(2))
                 row_opcode += opcode
 
-            instruction_list.append((row_begin_addr, row_opcode, disasm))
+            instruction_list.append([row_begin_addr, row_opcode, disasm])
 
         checked_instruction_list = eliminate.check_deadcode(instruction_list)
-
         lines = ''
         for i in checked_instruction_list:
-            lines += str(format(i[0], 'x')).upper() + ":    " + i[2] + '\n'
+            if b'\x90' != i[1][0]: # eliminate deadcode
+                lines += str(format(i[0], 'x')).upper() + ":    " + i[2] + '\n'
 
         self.ClearLines()
         self.colorize(lines)
@@ -225,7 +222,7 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         """
         return True
 
-# -----------------------------------------------------------------------
+
 def main():
     def cb():
         view = asmview_t()
