@@ -111,8 +111,8 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         for i in xrange(self.Count()):
             search_addr = self.GetLine(i)[0].rsplit(":")[0].replace("\x01\x0c","").replace("\x02\x0c","")
             if str_addr == search_addr:
-                self.Jump(i,0,0)     
-   
+                self.Jump(i,0,0)
+
     def reload_file(self, ea):
         if not self.colorize_file(ea):
             self.Close()
@@ -120,42 +120,38 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         return True
 
     def colorize_file(self, ea):
-        try:
-            instruction_list = []
-            address_list = list(FuncItems(ea))
-            lines = ""
-            for i, row_begin_addr in enumerate(address_list):
-                disasm = GetDisasm(row_begin_addr)
-                lines += disasm + "\n"
-                try:
-                    size = address_list[i+1] - row_begin_addr
+        instruction_list = []
+        address_list = list(FuncItems(ea))
+        lines = ""
+        for i, row_begin_addr in enumerate(address_list):
+            disasm = GetDisasm(row_begin_addr)
+            lines += disasm + "\n"
+            try:
+                size = address_list[i+1] - row_begin_addr
 
-                except IndexError:
-                    last_row_begin_addr = row_begin_addr
-                    last_row_end_addr = FindFuncEnd(last_row_begin_addr)
-                    size = last_row_end_addr - last_row_begin_addr
+            except IndexError:
+                last_row_begin_addr = row_begin_addr
+                last_row_end_addr = FindFuncEnd(last_row_begin_addr)
+                size = last_row_end_addr - last_row_begin_addr
 
-                row_opcode = ''
-                for i in range(size):
-                    int_opcode = GetOriginalByte(row_begin_addr + i)
-                    opcode = binascii.a2b_hex(hex(int_opcode)[2:].zfill(2))
-                    row_opcode += opcode
+            row_opcode = ''
+            for i in range(size):
+                int_opcode = GetOriginalByte(row_begin_addr + i)
+                opcode = binascii.a2b_hex(hex(int_opcode)[2:].zfill(2))
+                row_opcode += opcode
 
-                instruction_list.append((row_begin_addr, row_opcode, disasm))
+            instruction_list.append((row_begin_addr, row_opcode, disasm))
 
-            checked_instruction_list = eliminate.check_deadcode(instruction_list)
+        checked_instruction_list = eliminate.check_deadcode(instruction_list)
 
-            lines = ''
-            for i in checked_instruction_list:
-                lines += i[2] + '\n'
+        lines = ''
+        for i in checked_instruction_list:
+            lines += str(format(i[0], 'x')).upper() + ":    " + i[2] + '\n'
 
-            self.ClearLines()
-            self.colorize(lines)
+        self.ClearLines()
+        self.colorize(lines)
 
-            return True
-
-        except:
-            return False
+        return True
 
     def add_line(self, s=None):
         if not s:
@@ -165,7 +161,7 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         if target in self.block_list:
             self.AddLine("----------------------------------------------------------------")
             if idc.Name(int(target, 16))!= '':
-                self.AddLine(idc.Name(int(target, 16)))    
+                self.AddLine(idc.Name(int(target, 16)))
         self.AddLine(s)
 
     def as_comment(self, s):
@@ -237,7 +233,7 @@ def main():
         #    return
         view.Create()
         view.Show()
-        
+
     #cb()    #if you want create deadcode_eliminate view, call cb() in main()
     ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "dead code eliminate", "Shift-D", 0, cb, ())
     if ex_addmenu_item_ctx is None:
@@ -246,6 +242,7 @@ def main():
     else:
         print("Menu added successfully.")
         return True
-    
+
     return view
+
 view = main()
