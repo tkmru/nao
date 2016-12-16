@@ -10,10 +10,14 @@ def check_deadcode(instruction_list):
     # ready to unicorn
     mu = Uc(UC_ARCH_X86, UC_MODE_32)
     page_address = begin_address - begin_address % 0x1000
-    mu.mem_map(page_address, 0x400000) # map 4MB for this emulation
+    mu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
 
-    origin_registers = emulate(mu, begin_address, all_opcodes)
-    return judge(mu, instruction_list, origin_registers)
+    try:
+        origin_registers = emulate(mu, begin_address, all_opcodes)
+        return judge(mu, instruction_list, origin_registers)
+
+    except UcError as e:
+        return instruction_list
 
 
 def make_opcodes(instruction_list):
@@ -22,10 +26,10 @@ def make_opcodes(instruction_list):
         opcode = i[1]
         disasm = i[2]
         if ('call' != disasm[:4]) and ('leave' != disasm[:5]) and \
-           ('ret' != disasm[:3]) and ('[esp]' not in disasm):
+           ('ret' != disasm[:3]) and ('[' not in disasm) and (']' not in disasm):
             all_opcodes += opcode
         else:
-            all_opcodes +=  b'\x90' * len(opcode)
+            all_opcodes += b'\x90' * len(opcode)
 
     return all_opcodes
 
@@ -38,15 +42,19 @@ def judge(mu, instruction_list, origin_registers):
         opcode = instruction_list[i][1]
 
         # ls enable to emulate?, not already found ?
-        if ('call' != disasm[:4]) and ('leave' != disasm[:5]) and \
-           ('ret' != disasm[:3]) and ('[esp]' not in disasm) and (opcode[0] != b'\x90'):
+        if ('call' != disasm[:4]) and ('leave' != disasm[:5]) and ('ret' != disasm[:3]) and \
+           (opcode[0] != b'\x90') and ('[' not in disasm) and (']' not in disasm):
             replaced_instruction_list = copy.deepcopy(instruction_list)
             target_opcode_length = len(opcode)
-            replaced_instruction_list[i][1] = b'\x90' * target_opcode_length # replace to NOP
+            replaced_instruction_list[i][1] = b'\x90' * target_opcode_length  # replace to NOP
             replaced_opcodes = make_opcodes(replaced_instruction_list)
-            registers = emulate(mu, begin_address, replaced_opcodes)
-            if origin_registers == registers:
-                return judge(mu, replaced_instruction_list, origin_registers)
+            try:
+                registers = emulate(mu, begin_address, replaced_opcodes)
+                if origin_registers == registers:
+                    return judge(mu, replaced_instruction_list, origin_registers)
+
+            except UcError as e:
+                print e
 
     return instruction_list
 
@@ -79,6 +87,5 @@ def emulate(mu, begin_address, opcodes):
     r_esi = mu.reg_read(UC_X86_REG_ESI)
     r_esp = mu.reg_read(UC_X86_REG_ESP)
     r_ebp = mu.reg_read(UC_X86_REG_EBP)
-    r_eflags = mu.reg_read(UC_X86_REG_EFLAGS)
 
     return r_eax, r_ebx, r_ecx, r_edx, r_edi, r_esi, r_esp, r_ebp

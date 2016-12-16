@@ -1,12 +1,11 @@
 import idaapi
 import idautils
 import idc
-import os
 import binascii
 import eliminate
 
 
-class asm_colorizer_t(object):
+class AsmColorizer(object):
     def is_id(self, ch):
         return ch == '_' or ch.isalpha() or '0' <= ch <= '9'
 
@@ -29,7 +28,7 @@ class asm_colorizer_t(object):
             if ch == '\\' and line[i+1] == quote:
                 i += 1
             elif ch == quote:
-                i += 1 # also take the quote
+                i += 1  # also take the quote
                 break
             i += 1
         return (i, line[x:i])
@@ -78,23 +77,21 @@ class asm_colorizer_t(object):
             self.add_line(s)
 
 
-class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
+class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
     def Create(self):
-        # Create the customview
         ea = ScreenEA()
-        # Create the customview
         if not idaapi.simplecustviewer_t.Create(self, "%s - dead code eliminate" % (idc.GetFunctionName(ScreenEA()))):
             return False
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(["ret"])
-        self.register_list    = idautils.GetRegisterList()
+        self.register_list = idautils.GetRegisterList()
         self.register_list.extend(["eax", "ebx", "ecx", "edx", "edi", "esi", "ebp", "esp"])
 
         f = idaapi.get_func(ScreenEA())
         self.fc = idaapi.FlowChart(f)
         self.block_list = []
         for block in self.fc:
-            self.block_list.append(format(block.startEA,'x').upper())
+            self.block_list.append(format(block.startEA, 'x').upper())
 
         self.reload_file(ea)
 
@@ -102,13 +99,12 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
 
         return True
 
-
     def jump(self):
         str_addr = self.GetCurrentWord(0).lstrip('loc_')
         for i in xrange(self.Count()):
-            search_addr = self.GetLine(i)[0].rsplit(":")[0].replace("\x01\x0c","").replace("\x02\x0c","")
+            search_addr = self.GetLine(i)[0].rsplit(":")[0].replace("\x01\x0c", "").replace("\x02\x0c", "")
             if str_addr == search_addr:
-                self.Jump(i,0,0)
+                self.Jump(i, 0, 0)
 
     def reload_file(self, ea):
         if not self.colorize_file(ea):
@@ -142,7 +138,7 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         checked_instruction_list = eliminate.check_deadcode(instruction_list)
         lines = ''
         for i in checked_instruction_list:
-            if b'\x90' != i[1][0]: # eliminate deadcode
+            if b'\x90' != i[1][0]:  # eliminate deadcode
                 lines += str(format(i[0], 'x')).upper() + ":    " + i[2] + '\n'
 
         self.ClearLines()
@@ -154,10 +150,10 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
         if not s:
             s = ""
 
-        target = s.rsplit(":")[0].replace("\x01\x0c","").replace("\x02\x0c","")
+        target = s.rsplit(":")[0].replace("\x01\x0c", "").replace("\x02\x0c", "")
         if target in self.block_list:
             self.AddLine("----------------------------------------------------------------")
-            if idc.Name(int(target, 16))!= '':
+            if idc.Name(int(target, 16)) != '':
                 self.AddLine(idc.Name(int(target, 16)))
         self.AddLine(s)
 
@@ -192,54 +188,19 @@ class asmview_t(idaapi.simplecustviewer_t, asm_colorizer_t):
             return self.jump()
         return False
 
-    def OnKeydown(self, vkey, shift):
-        """
-        User pressed a key
-        @param vkey: Virtual key code
-        @param shift: Shift flag
-        @return Boolean. True if you handled the event
-
-        # ESCAPE
-        if vkey == 27:
-            self.Close()
-        elif vkey == ord('H'):
-            lineno = self.GetLineNo()
-            if lineno is not None:
-                line, fg, bg = self.GetLine(lineno)
-                if line and line[0] != idaapi.SCOLOR_INV:
-                    s = idaapi.SCOLOR_INV + line + idaapi.SCOLOR_INV
-                    self.EditLine(lineno, s, fg, bg)
-                    self.Refresh()
-        elif vkey == ord('C'):
-            self.ClearLines()
-            self.Refresh()
-        elif vkey == ord('S'):
-            print "Selection (x1, y1, x2, y2) = ", self.GetSelection()
-        elif vkey == ord('I'):
-            print "Position (line, x, y) = ", self.GetPos(mouse = 0)
-        else:
-            return False
-        """
-        return True
-
+def create_view():
+    view = AsmView()
+    view.Create()
+    view.Show()
 
 def main():
-    def cb():
-        view = asmview_t()
-        #if not view.Create():
-        #    return
-        view.Create()
-        view.Show()
-
-    #cb()    #if you want create deadcode_eliminate view, call cb() in main()
-    ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "dead code eliminate", "Shift-D", 0, cb, ())
+    ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "dead code eliminate", "Shift-D", 0, create_view, ())
     if ex_addmenu_item_ctx is None:
         print("Failed to add menu!")
-        #del ex_addmenu_item_ctx
+
     else:
         print("Menu added successfully.")
-        return True
 
-    return view
+    return True
 
 view = main()
