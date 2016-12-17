@@ -3,7 +3,9 @@ import idautils
 import idc
 import binascii
 import eliminate
-
+from multiprocessing import Process, Queue
+import threading
+import PyQt5
 
 class AsmColorizer(object):
     def is_id(self, ch):
@@ -135,9 +137,15 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
 
             instruction_list.append([row_begin_addr, row_opcode, disasm])
 
-        checked_instruction_list = eliminate.check_deadcode(instruction_list)
+        #q = Queue()
+        p = Process(target=eliminate.check_deadcode, args=(instruction_list,))
+        #p = threading.Thread(target=eliminate.check_deadcode, args=(instruction_list,))
+        p.start()
+
+        # checked_instruction_list = eliminate.check_deadcode(instruction_list)
         lines = ''
-        for i in checked_instruction_list:
+        # for i in checked_instruction_list:
+        for i in instruction_list:
             if b'\x90' != i[1][0]:  # eliminate deadcode
                 lines += str(format(i[0], 'x')).upper() + ":    " + i[2] + '\n'
 
@@ -193,8 +201,15 @@ def create_view():
     view.Create()
     view.Show()
 
+def run():
+    #p = Process(target=create_view, args=())
+    p = threading.Thread(target=create_view, args=())
+    p.start()
+
 def main():
+    # ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "dead code eliminate", "Shift-D", 0, run, ())
     ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "dead code eliminate", "Shift-D", 0, create_view, ())
+
     if ex_addmenu_item_ctx is None:
         print("Failed to add menu!")
 

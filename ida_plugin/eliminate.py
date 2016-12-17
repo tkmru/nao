@@ -1,9 +1,11 @@
 from unicorn import *
 from unicorn.x86_const import *
 import copy
+import sys
 
 
 def check_deadcode(instruction_list):
+    sys.setrecursionlimit(10000)
     begin_address = instruction_list[0][0]
     all_opcodes = make_opcodes(instruction_list)
 
