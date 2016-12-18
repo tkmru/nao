@@ -17,6 +17,7 @@ def check_deadcode(instruction_list):
         return judge(mu, instruction_list, origin_registers)
 
     except UcError as e:
+        print e
         return instruction_list
 
 
@@ -26,7 +27,7 @@ def make_opcodes(instruction_list):
         opcode = i[1]
         disasm = i[2]
         if ('call' != disasm[:4]) and ('leave' != disasm[:5]) and \
-           ('ret' != disasm[:3]) and ('[' not in disasm) and (']' not in disasm):
+           ('ret' != disasm[:3]) and ("offset" not in disasm):
             all_opcodes += opcode
         else:
             all_opcodes += b'\x90' * len(opcode)
@@ -43,7 +44,7 @@ def judge(mu, instruction_list, origin_registers):
 
         # ls enable to emulate?, not already found ?
         if ('call' != disasm[:4]) and ('leave' != disasm[:5]) and ('ret' != disasm[:3]) and \
-           (opcode[0] != b'\x90') and ('[' not in disasm) and (']' not in disasm):
+           (opcode[0] != b'\x90') and ("offset" not in disasm):
             replaced_instruction_list = copy.deepcopy(instruction_list)
             target_opcode_length = len(opcode)
             replaced_instruction_list[i][1] = b'\x90' * target_opcode_length  # replace to NOP
@@ -55,6 +56,10 @@ def judge(mu, instruction_list, origin_registers):
 
             except UcError as e:
                 print e
+                mu = Uc(UC_ARCH_X86, UC_MODE_32)
+                page_address = begin_address - begin_address % 0x1000
+                mu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
+
 
     return instruction_list
 
