@@ -56,11 +56,12 @@ def judge(mu, instruction_list, origin_registers):
 
             except UcError as e:
                 print e
+                del mu
                 mu = Uc(UC_ARCH_X86, UC_MODE_32)
                 page_address = begin_address - begin_address % 0x1000
                 mu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
 
-
+    del mu
     return instruction_list
 
 
