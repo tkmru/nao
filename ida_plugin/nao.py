@@ -80,7 +80,7 @@ class AsmColorizer(object):
 class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
     def Create(self):
         ea = ScreenEA()
-        if not idaapi.simplecustviewer_t.Create(self, "%s - dead code eliminate" % (idc.GetFunctionName(ScreenEA()))):
+        if not idaapi.simplecustviewer_t.Create(self, "%s - nao" % (idc.GetFunctionName(ScreenEA()))):
             return False
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(["ret"])
@@ -194,7 +194,7 @@ def create_view():
     view.Show()
 
 def main():
-    ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "dead code eliminate", "Shift-D", 0, create_view, ())
+    ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "eliminate dead code", "Shift-D", 0, create_view, ())
     if ex_addmenu_item_ctx is None:
         print("Failed to add menu!")
 
