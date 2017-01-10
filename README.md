@@ -1,6 +1,13 @@
 # nao
 ```nao(no meaning assembly omiter)``` is dead code eliminator plugin for IDA pro.
 
+before
+![before](./before.png)
+
+after
+![after](./after.png)
+
+
 ## Requirement
 - IDAPython
 - [Unicorn](http://www.unicorn-engine.org/) and Python binding
