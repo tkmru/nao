@@ -34,7 +34,7 @@ class AsmColorizer(object):
         return (i, line[x:i])
 
     def colorize(self, lines):
-        slines = lines.split("\n")
+        slines = lines.split('\n')
         for line in slines:
             line = line.rstrip()
             if not line:
@@ -42,11 +42,11 @@ class AsmColorizer(object):
                 continue
             x = 0
             e = len(line)
-            s = ""
+            s = ''
             while x < e:
                 ch = line[x]
                 # String?
-                if ch == '"' or ch == "'":
+                if ch == "'" or ch == '"':
                     x, w = self.get_quoted_string(line, x, e)
                     s += self.as_string(w)
                 # Tab?
@@ -80,12 +80,12 @@ class AsmColorizer(object):
 class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
     def Create(self):
         ea = ScreenEA()
-        if not idaapi.simplecustviewer_t.Create(self, "%s - nao" % (idc.GetFunctionName(ScreenEA()))):
+        if not idaapi.simplecustviewer_t.Create(self, '%s - nao' % (idc.GetFunctionName(ScreenEA()))):
             return False
         self.instruction_list = idautils.GetInstructionList()
-        self.instruction_list.extend(["ret"])
+        self.instruction_list.extend(['ret'])
         self.register_list = idautils.GetRegisterList()
-        self.register_list.extend(["eax", "ebx", "ecx", "edx", "edi", "esi", "ebp", "esp"])
+        self.register_list.extend(['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp'])
 
         f = idaapi.get_func(ScreenEA())
         self.fc = idaapi.FlowChart(f)
@@ -95,14 +95,14 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
 
         self.reload_file(ea)
 
-        self.id_jmp = self.AddPopupMenu("Jump")
+        self.id_jmp = self.AddPopupMenu('Jump')
 
         return True
 
     def jump(self):
         str_addr = self.GetCurrentWord(0).lstrip('loc_')
         for i in xrange(self.Count()):
-            search_addr = self.GetLine(i)[0].rsplit(":")[0].replace("\x01\x0c", "").replace("\x02\x0c", "")
+            search_addr = self.GetLine(i)[0].rsplit(':')[0].replace('\x01\x0c', '').replace('\x02\x0c', '')
             if str_addr == search_addr:
                 self.Jump(i, 0, 0)
 
@@ -115,10 +115,10 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
     def colorize_file(self, ea):
         instruction_list = []
         address_list = list(FuncItems(ea))
-        lines = ""
+        lines = ''
         for i, row_begin_addr in enumerate(address_list):
             disasm = GetDisasm(row_begin_addr)
-            lines += disasm + "\n"
+            lines += disasm + '\n'
             try:
                 size = address_list[i+1] - row_begin_addr
 
@@ -139,7 +139,7 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
         lines = ''
         for i in checked_instruction_list:
             if b'\x90' != i[1][0]:  # eliminate deadcode
-                lines += str(format(i[0], 'x')).upper() + ":    " + i[2] + '\n'
+                lines += str(format(i[0], 'x')).upper() + ':    ' + i[2] + '\n'
 
         self.ClearLines()
         self.colorize(lines)
@@ -148,11 +148,11 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
 
     def add_line(self, s=None):
         if not s:
-            s = ""
+            s = ''
 
-        target = s.rsplit(":")[0].replace("\x01\x0c", "").replace("\x02\x0c", "")
+        target = s.rsplit(':')[0].replace('\x01\x0c', '').replace('\x02\x0c', '')
         if target in self.block_list:
-            self.AddLine("----------------------------------------------------------------")
+            self.AddLine('----------------------------------------------------------------')
             if idc.Name(int(target, 16)) != '':
                 self.AddLine(idc.Name(int(target, 16)))
         self.AddLine(s)
@@ -179,11 +179,11 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
         return idaapi.COLSTR(s, idaapi.SCOLOR_KEYWORD)
 
     def OnPopupMenu(self, menu_id):
-        """
+        '''
         A context (or popup) menu item was executed.
         @param menu_id: ID previously registered with AddPopupMenu()
         @return: Boolean
-        """
+        '''
         if self.id_jmp == menu_id:
             return self.jump()
         return False
@@ -192,14 +192,15 @@ def create_view():
     view = AsmView()
     view.Create()
     view.Show()
+    print 'eliminated!!'
 
 def main():
-    ex_addmenu_item_ctx = idaapi.add_menu_item("Edit/", "eliminate dead code", "Shift-D", 0, create_view, ())
+    ex_addmenu_item_ctx = idaapi.add_menu_item('Edit/', 'eliminate dead code', 'Shift-D', 0, create_view, ())
     if ex_addmenu_item_ctx is None:
-        print("Failed to add menu!")
+        print('Failed to add menu!')
 
     else:
-        print("Menu added successfully.")
+        print('Menu added successfully.')
 
     return True
 
