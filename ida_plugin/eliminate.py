@@ -1,3 +1,6 @@
+#!/usr/bin/env python2.7
+# coding: UTF-8
+
 from unicorn import *
 from unicorn.x86_const import *
 import copy
@@ -8,13 +11,13 @@ def check_deadcode(instruction_list):
     all_opcodes = make_opcodes(instruction_list)
 
     # ready to unicorn
-    mu = Uc(UC_ARCH_X86, UC_MODE_32)
+    emu = Uc(UC_ARCH_X86, UC_MODE_32)
     page_address = begin_address - begin_address % 0x1000
-    mu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
+    emu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
 
     try:
-        origin_registers = emulate(mu, begin_address, all_opcodes)
-        return judge(mu, instruction_list, origin_registers)
+        origin_registers = emulate(emu, begin_address, all_opcodes)
+        return judge(emu, instruction_list, origin_registers)
 
     except UcError as e:
         return instruction_list
@@ -34,7 +37,7 @@ def make_opcodes(instruction_list):
     return all_opcodes
 
 
-def judge(mu, instruction_list, origin_registers):
+def judge(emu, instruction_list, origin_registers):
     length = len(instruction_list)
     begin_address = instruction_list[0][0]
     for i in xrange(length):
@@ -49,47 +52,47 @@ def judge(mu, instruction_list, origin_registers):
             replaced_instruction_list[i][1] = b'\x90' * target_opcode_length  # replace to NOP
             replaced_opcodes = make_opcodes(replaced_instruction_list)
             try:
-                registers = emulate(mu, begin_address, replaced_opcodes)
+                registers = emulate(emu, begin_address, replaced_opcodes)
                 if origin_registers == registers:
-                    return judge(mu, replaced_instruction_list, origin_registers)
+                    return judge(emu, replaced_instruction_list, origin_registers)
 
             except UcError as e:
-                del mu
-                mu = Uc(UC_ARCH_X86, UC_MODE_32)
+                del emu
+                emu = Uc(UC_ARCH_X86, UC_MODE_32)
                 page_address = begin_address - begin_address % 0x1000
-                mu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
+                emu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
 
-    del mu
+    del emu
     return instruction_list
 
 
-def emulate(mu, begin_address, opcodes):
-    mu.mem_write(begin_address, opcodes)
+def emulate(emu, begin_address, opcodes):
+    emu.mem_write(begin_address, opcodes)
 
     # initialize stack
-    mu.reg_write(UC_X86_REG_ESP, begin_address + 0x200000)
-    mu.reg_write(UC_X86_REG_EBP, begin_address + 0x200100)
+    emu.reg_write(UC_X86_REG_ESP, begin_address + 0x200000)
+    emu.reg_write(UC_X86_REG_EBP, begin_address + 0x200100)
 
     # initialize registers
-    mu.reg_write(UC_X86_REG_EAX, 0x1234)
-    mu.reg_write(UC_X86_REG_EBX, 0x1234)
-    mu.reg_write(UC_X86_REG_ECX, 0x1234)
-    mu.reg_write(UC_X86_REG_EDX, 0x1234)
-    mu.reg_write(UC_X86_REG_EDI, 0x1234)
-    mu.reg_write(UC_X86_REG_ESI, 0x1234)
+    emu.reg_write(UC_X86_REG_EAX, 0x1234)
+    emu.reg_write(UC_X86_REG_EBX, 0x1234)
+    emu.reg_write(UC_X86_REG_ECX, 0x1234)
+    emu.reg_write(UC_X86_REG_EDX, 0x1234)
+    emu.reg_write(UC_X86_REG_EDI, 0x1234)
+    emu.reg_write(UC_X86_REG_ESI, 0x1234)
 
     # initialize flags
-    mu.reg_write(UC_X86_REG_EFLAGS, 0x0)
+    emu.reg_write(UC_X86_REG_EFLAGS, 0x0)
 
-    mu.emu_start(begin_address, begin_address + len(opcodes))
+    emu.emu_start(begin_address, begin_address + len(opcodes))
 
-    r_eax = mu.reg_read(UC_X86_REG_EAX)
-    r_ebx = mu.reg_read(UC_X86_REG_EBX)
-    r_ecx = mu.reg_read(UC_X86_REG_ECX)
-    r_edx = mu.reg_read(UC_X86_REG_EDX)
-    r_edi = mu.reg_read(UC_X86_REG_EDI)
-    r_esi = mu.reg_read(UC_X86_REG_ESI)
-    r_esp = mu.reg_read(UC_X86_REG_ESP)
-    r_ebp = mu.reg_read(UC_X86_REG_EBP)
+    r_eax = emu.reg_read(UC_X86_REG_EAX)
+    r_ebx = emu.reg_read(UC_X86_REG_EBX)
+    r_ecx = emu.reg_read(UC_X86_REG_ECX)
+    r_edx = emu.reg_read(UC_X86_REG_EDX)
+    r_edi = emu.reg_read(UC_X86_REG_EDI)
+    r_esi = emu.reg_read(UC_X86_REG_ESI)
+    r_esp = emu.reg_read(UC_X86_REG_ESP)
+    r_ebp = emu.reg_read(UC_X86_REG_EBP)
 
     return r_eax, r_ebx, r_ecx, r_edx, r_edi, r_esi, r_esp, r_ebp

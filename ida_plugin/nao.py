@@ -1,7 +1,10 @@
+#!/usr/bin/env python2.7
+# coding: UTF-8
+
 import idaapi
 import idautils
 import idc
-import binascii
+import struct
 import eliminate
 
 
@@ -130,7 +133,7 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
             row_opcode = ''
             for i in range(size):
                 int_opcode = GetOriginalByte(row_begin_addr + i)
-                opcode = binascii.a2b_hex(hex(int_opcode)[2:].zfill(2))
+                opcode = struct.pack('B', int_opcode)
                 row_opcode += opcode
 
             instruction_list.append([row_begin_addr, row_opcode, disasm])
@@ -138,7 +141,7 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
         checked_instruction_list = eliminate.check_deadcode(instruction_list)
         lines = ''
         for i in checked_instruction_list:
-            if b'\x90' != i[1][0]:  # eliminate deadcode
+            if b'\x90' != i[1][0]:  # check dead code
                 lines += str(format(i[0], 'x')).upper() + ':    ' + i[2] + '\n'
 
         self.ClearLines()
