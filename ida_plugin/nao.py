@@ -1,5 +1,5 @@
 """
-I referred to the following code
+We referred to the following code
 http://www.hexblog.com/?p=119
 """
 
@@ -85,7 +85,7 @@ class AsmColorizer(object):
             self.add_line(s)
 
 
-class PlugUI(idaapi.simplecustviewer_t, AsmColorizer):
+class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
     def Create(self):
         ea = ScreenEA()
         if not idaapi.simplecustviewer_t.Create(self, '%s - nao' % (idc.GetFunctionName(ScreenEA()))):
@@ -115,12 +115,12 @@ class PlugUI(idaapi.simplecustviewer_t, AsmColorizer):
                 self.Jump(i, 0, 0)
 
     def load(self, ea):
-        if not self.deadcode_eliminate(ea):
+        if not self.eliminate_deadcode(ea):
             self.Close()
             return False
         return True
 
-    def deadcode_eliminate(self, ea):
+    def eliminate_deadcode(self, ea):
         instruction_list = []
         address_list = list(FuncItems(ea))
         lines = ''
@@ -197,7 +197,7 @@ class PlugUI(idaapi.simplecustviewer_t, AsmColorizer):
         return False
 
 def create_view():
-    view = PlugUI()
+    view = PluginUI()
     view.Create()
     view.Show()
     print 'eliminated!!'
