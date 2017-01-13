@@ -1,3 +1,8 @@
+"""
+We referred to the following code
+http://www.hexblog.com/?p=119
+"""
+
 #!/usr/bin/env python2.7
 # coding: UTF-8
 
@@ -80,7 +85,7 @@ class AsmColorizer(object):
             self.add_line(s)
 
 
-class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
+class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
     def Create(self):
         ea = ScreenEA()
         if not idaapi.simplecustviewer_t.Create(self, '%s - nao' % (idc.GetFunctionName(ScreenEA()))):
@@ -89,14 +94,14 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
         self.instruction_list.extend(['ret'])
         self.register_list = idautils.GetRegisterList()
         self.register_list.extend(['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp'])
-
+        
         f = idaapi.get_func(ScreenEA())
         self.fc = idaapi.FlowChart(f)
         self.block_list = []
         for block in self.fc:
             self.block_list.append(format(block.startEA, 'x').upper())
 
-        self.reload_file(ea)
+        self.load(ea)
 
         self.id_jmp = self.AddPopupMenu('Jump')
 
@@ -109,13 +114,13 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
             if str_addr == search_addr:
                 self.Jump(i, 0, 0)
 
-    def reload_file(self, ea):
-        if not self.colorize_file(ea):
+    def load(self, ea):
+        if not self.eliminate_deadcode(ea):
             self.Close()
             return False
         return True
 
-    def colorize_file(self, ea):
+    def eliminate_deadcode(self, ea):
         instruction_list = []
         address_list = list(FuncItems(ea))
         lines = ''
@@ -192,7 +197,7 @@ class AsmView(idaapi.simplecustviewer_t, AsmColorizer):
         return False
 
 def create_view():
-    view = AsmView()
+    view = PluginUI()
     view.Create()
     view.Show()
     print 'eliminated!!'
@@ -200,10 +205,10 @@ def create_view():
 def main():
     ex_addmenu_item_ctx = idaapi.add_menu_item('Edit/', 'eliminate dead code', 'Shift-D', 0, create_view, ())
     if ex_addmenu_item_ctx is None:
-        print('Failed to add menu!')
+        print('Failed to add nao!')
 
     else:
-        print('Menu added successfully.')
+        print('nao added successfully.')
 
     return True
 
