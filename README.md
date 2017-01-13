@@ -1,5 +1,5 @@
 # nao
-```nao(no meaning assembly omiter)``` is dead code eliminator plugin for IDA pro.
+```nao(no-meaning assembly omiter)``` is dead code eliminator plugin for IDA pro.
 
 before
 ![before](./before.png)
@@ -18,10 +18,10 @@ Please follow the link.
 [Download – Unicorn – The ultimate CPU emulator](http://www.unicorn-engine.org/download/)
 
 ## Installation
-You use nao.py as the IDAPython script.
+Running ```nao.py``` as the IDAPython script.
 
 ## Usage
-```Shift-D``` display eliminated asm view from current graph view.
+```Shift-D``` display eliminated disassemble code from current function.
 
 ## Licence
 [GPL v3 license](LICENCE)
