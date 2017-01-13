@@ -85,7 +85,7 @@ class AsmColorizer(object):
             self.add_line(s)
 
 
-class Plug_UI(idaapi.simplecustviewer_t, AsmColorizer):
+class PlugUI(idaapi.simplecustviewer_t, AsmColorizer):
     def Create(self):
         ea = ScreenEA()
         if not idaapi.simplecustviewer_t.Create(self, '%s - nao' % (idc.GetFunctionName(ScreenEA()))):
@@ -197,7 +197,7 @@ class Plug_UI(idaapi.simplecustviewer_t, AsmColorizer):
         return False
 
 def create_view():
-    view = Plug_UI()
+    view = PlugUI()
     view.Create()
     view.Show()
     print 'eliminated!!'
