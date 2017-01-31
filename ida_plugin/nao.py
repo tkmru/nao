@@ -146,12 +146,12 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
         checked_instruction_list = eliminate.check_deadcode(instruction_list)
         lines = ''
         for i in checked_instruction_list:
-            try:
-                if b'\x90' != i[1][0]:  # check dead code
-                    lines += str(format(i[0], 'x')).upper() + ':    ' + i[2] + '\n'
-            except IndexError:
-                if i[2].startswith('jmp'):
-                    lines += str(format(i[0], 'x')).upper() + ':    ' + i[2] + '\n'
+            address = i[0]
+            opcode = i[1]
+            disasm = i[2]
+            if not opcode.startswith(b'\x90'):  # check dead code
+                lines += str(format(address, 'x')).upper() + ':    ' + disasm + '\n'
+
         self.ClearLines()
         self.colorize(lines)
 
