@@ -130,9 +130,13 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
             disasm = GetDisasm(row_begin_addr)
             lines += disasm + '\n'
             try:
-                size = address_list[i + 1] - row_begin_addr
+                next_row_begin_addr = address_list[i + 1]
+                size = next_row_begin_addr - row_begin_addr
+                if size < 0: # when row_begin_addr is end basic block
+                    row_end_addr = FindFuncEnd(row_begin_addr)
+                    size = row_end_addr - row_begin_addr
 
-            except IndexError:
+            except IndexError: # when next_row_begin_addr is not found
                 last_row_begin_addr = row_begin_addr
                 last_row_end_addr = FindFuncEnd(last_row_begin_addr)
                 size = last_row_end_addr - last_row_begin_addr
@@ -148,8 +152,11 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
         checked_instruction_list = eliminate.check_deadcode(instruction_list)
         lines = ''
         for i in checked_instruction_list:
-            if b'\x90' != i[1][0]:  # check dead code
-                lines += str(format(i[0], 'x')).upper() + ':    ' + i[2] + '\n'
+            address = i[0]
+            opcode = i[1]
+            disasm = i[2]
+            if not opcode.startswith(b'\x90'):  # check dead code
+                lines += str(format(address, 'x')).upper() + ':    ' + disasm + '\n'
 
         self.ClearLines()
         self.colorize(lines)
@@ -203,7 +210,7 @@ def create_view():
     view = PluginUI()
     view.Create()
     view.Show()
-    print 'eliminated!!'
+    print('eliminated!!')
 
 
 def main():
