@@ -94,7 +94,7 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
         self.instruction_list.extend(['ret'])
         self.register_list = idautils.GetRegisterList()
         self.register_list.extend(['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp'])
-        
+
         f = idaapi.get_func(ScreenEA())
         self.fc = idaapi.FlowChart(f)
         self.block_list = []
@@ -150,7 +150,7 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
                 if b'\x90' != i[1][0]:  # check dead code
                     lines += str(format(i[0], 'x')).upper() + ':    ' + i[2] + '\n'
             except IndexError:
-                "jmp" in i[2]:
+                if i[2].startswith('jmp'):
                     lines += str(format(i[0], 'x')).upper() + ':    ' + i[2] + '\n'
         self.ClearLines()
         self.colorize(lines)
