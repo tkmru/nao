@@ -13,7 +13,7 @@ class TestEliminate(unittest.TestCase):
         actual = eliminate.check_deadcode(test_instructions.light_arg_list)
         self.assertEqual(expected, actual)
 
-    def test_check_heavy_deadcode(self):
+    def test_check_heavy_deadcode(self): # not pass test...
         expected = test_instructions.heavy_expected_list
         actual = eliminate.check_deadcode(test_instructions.heavy_arg_list)
         self.assertEqual(expected, actual)
