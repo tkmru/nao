@@ -17,7 +17,8 @@ def check_deadcode(instruction_list):
 
     try:
         origin_registers = emulate(emu, begin_address, all_opcodes)
-        return judge(emu, instruction_list, origin_registers)
+        judged_instruction_list = judge(emu, instruction_list, origin_registers)
+        return judged_instruction_list
 
     except UcError as e:
         return instruction_list
