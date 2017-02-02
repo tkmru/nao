@@ -1,10 +1,10 @@
+#!/usr/bin/env python2.7
+# coding: UTF-8
+
 """
 We referred to the following code
 http://www.hexblog.com/?p=119
 """
-
-#!/usr/bin/env python2.7
-# coding: UTF-8
 
 import idaapi
 import idautils
@@ -14,6 +14,7 @@ import eliminate
 
 
 class AsmColorizer(object):
+
     def is_id(self, ch):
         return ch == '_' or ch.isalpha() or '0' <= ch <= '9'
 
@@ -33,7 +34,7 @@ class AsmColorizer(object):
         i = x + 1
         while i < e:
             ch = line[i]
-            if ch == '\\' and line[i+1] == quote:
+            if ch == '\\' and line[i + 1] == quote:
                 i += 1
             elif ch == quote:
                 i += 1  # also take the quote
@@ -86,6 +87,7 @@ class AsmColorizer(object):
 
 
 class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
+
     def Create(self):
         ea = ScreenEA()
         if not idaapi.simplecustviewer_t.Create(self, '%s - nao' % (idc.GetFunctionName(ScreenEA()))):
@@ -128,13 +130,13 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
             disasm = GetDisasm(row_begin_addr)
             lines += disasm + '\n'
             try:
-                next_row_begin_addr = address_list[i+1]
+                next_row_begin_addr = address_list[i + 1]
                 size = next_row_begin_addr - row_begin_addr
-                if size < 0: # when row_begin_addr is end basic block
+                if size < 0:  # when row_begin_addr is end basic block
                     row_end_addr = FindFuncEnd(row_begin_addr)
                     size = row_end_addr - row_begin_addr
 
-            except IndexError: # when next_row_begin_addr is not found
+            except IndexError:  # when next_row_begin_addr is not found
                 last_row_begin_addr = row_begin_addr
                 last_row_end_addr = FindFuncEnd(last_row_begin_addr)
                 size = last_row_end_addr - last_row_begin_addr
@@ -203,11 +205,13 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
             return self.jump()
         return False
 
+
 def create_view():
     view = PluginUI()
     view.Create()
     view.Show()
     print('eliminated!!')
+
 
 def main():
     ex_addmenu_item_ctx = idaapi.add_menu_item('Edit/', 'eliminate dead code', 'Shift-D', 0, create_view, ())
@@ -219,4 +223,6 @@ def main():
 
     return True
 
-view = main()
+
+if __name__ == '__main__':
+    view = main()
