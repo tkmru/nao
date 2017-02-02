@@ -20,7 +20,7 @@ def check_deadcode(instruction_list):
         judged_instruction_list = judge(emu, instruction_list, origin_registers)
         return judged_instruction_list
 
-    except UcError as e:
+    except UcError:
         return instruction_list
 
 
@@ -57,7 +57,7 @@ def judge(emu, instruction_list, origin_registers):
                 if origin_registers == registers:
                     return judge(emu, replaced_instruction_list, origin_registers)
 
-            except UcError as e:
+            except UcError:
                 del emu
                 emu = Uc(UC_ARCH_X86, UC_MODE_32)
                 page_address = begin_address - begin_address % 0x1000

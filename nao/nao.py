@@ -132,11 +132,11 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
             try:
                 next_row_begin_addr = address_list[i + 1]
                 size = next_row_begin_addr - row_begin_addr
-                if size < 0: # when row_begin_addr is end basic block
+                if size < 0:  # when row_begin_addr is end basic block
                     row_end_addr = FindFuncEnd(row_begin_addr)
                     size = row_end_addr - row_begin_addr
 
-            except IndexError: # when next_row_begin_addr is not found
+            except IndexError:  # when next_row_begin_addr is not found
                 last_row_begin_addr = row_begin_addr
                 last_row_end_addr = FindFuncEnd(last_row_begin_addr)
                 size = last_row_end_addr - last_row_begin_addr

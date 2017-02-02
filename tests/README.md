@@ -1,4 +1,4 @@
-# run all test
+# run all tests
 
 ```
 python -m unittest discover
