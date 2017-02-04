@@ -3,11 +3,11 @@
 
 before:
 
-![before](./before.png)
+![before](./screenshots/before.png)
 
 after:
 
-![after](./after.png)
+![after](./screenshots/after.png)
 
 
 ## Requirement
@@ -20,10 +20,10 @@ Please follow the link.
 [Download – Unicorn – The ultimate CPU emulator](http://www.unicorn-engine.org/download/)
 
 ## Installation
-Please run ```nao.py``` as the IDAPython script.
-After you run nao.py, you'll see ```eliminate dead code``` button on edit menu.
+Please copy the contents of ```nao``` directory in this repository to ```$IDA_ROOT/plugins``` folder, or just run ```nao/nao.py``` as the IDAPython script.
+After you install nao.py, you'll see ```eliminate dead code``` button on edit menu.
 
-![edit_menu](./edit_menu.png)
+![edit_menu](./screenshots/edit_menu.png)
 
 ## Usage
 ```Shift-D``` display eliminated disassemble code from current function.
