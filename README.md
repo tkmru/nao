@@ -21,9 +21,9 @@ Please follow the link.
 
 ## Installation
 Please copy the contents of ```nao``` directory in this repository to ```$IDA_ROOT/plugins``` folder, or just run ```nao/nao.py``` as the IDAPython script.
-After you install nao.py, you'll see ```eliminate dead code``` button on edit menu.
+After you install nao.py, you'll see ```eliminate dead code``` button on Edit/Plugins menu.
 
-![edit_menu](./screenshots/edit_menu.png)
+![plugins_menu](./screenshots/plugins_menu.png)
 
 ## Usage
 ```Shift-D``` display eliminated disassemble code from current function.

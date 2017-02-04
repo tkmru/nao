@@ -214,12 +214,12 @@ def create_view():
 
 
 def main():
-    ex_addmenu_item_ctx = idaapi.add_menu_item('Edit/', 'eliminate dead code', 'Shift-D', 0, create_view, ())
+    ex_addmenu_item_ctx = idaapi.add_menu_item('Edit/Plugins/', 'eliminate dead code', 'Shift-D', 0, create_view, ())
     if ex_addmenu_item_ctx is None:
-        print('Failed to add nao!')
+        print('Failed to add nao.')
 
     else:
-        print('nao added successfully.')
+        print('Successfully added nao!!')
 
     return True
 
