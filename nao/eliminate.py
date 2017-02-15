@@ -5,7 +5,6 @@ from unicorn import *
 from unicorn.x86_const import *
 import copy
 
-
 def check_deadcode(instruction_list):
     begin_address = instruction_list[0][0]
     all_opcodes = make_opcodes(instruction_list)
@@ -24,14 +23,25 @@ def check_deadcode(instruction_list):
         return instruction_list
 
 
+
+def check_exceptional_ins(disasm):
+    exceptional_instruction_list = ["call", "leave", "ret", "offset", "cmp", "jnz", "jz",
+                     "jne", "je", "test"]
+    
+    for ins in exceptional_instruction_list:
+        if ins in disasm:
+            return True
+    return False
+
 def make_opcodes(instruction_list):
     all_opcodes = ''
     for i in instruction_list:
         opcode = i[1]
         disasm = i[2]
-        if ('call' != disasm[:4]) and ('leave' != disasm[:5]) and \
-           ('ret' != disasm[:3]) and ('offset' not in disasm):
+        
+        if check_exceptional_ins(disasm) == False:    
             all_opcodes += opcode
+        
         else:
             all_opcodes += b'\x90' * len(opcode)
 
@@ -46,8 +56,7 @@ def judge(emu, instruction_list, origin_registers):
         opcode = instruction_list[i][1]
 
         # ls enable to emulate?, not already found ?
-        if ('call' != disasm[:4]) and ('leave' != disasm[:5]) and ('ret' != disasm[:3]) and \
-           (opcode[0] != b'\x90') and ('offset' not in disasm):
+        if (check_exceptional_ins(disasm) == False) and (opcode[0] != b'\x90'):
             replaced_instruction_list = copy.deepcopy(instruction_list)
             target_opcode_length = len(opcode)
             replaced_instruction_list[i][1] = b'\x90' * target_opcode_length  # replace to NOP
