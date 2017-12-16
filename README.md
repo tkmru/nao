@@ -1,5 +1,7 @@
 # nao
-```nao(no-meaning assembly omiter)``` is dead code eliminator plugin for IDA pro.
+```nao(no-meaning assembly omiter)``` is simple dead code eliminator plugin for IDA pro.
+
+**CURRENTLY UNDER DEVELOPMENT**
 
 before:
 
