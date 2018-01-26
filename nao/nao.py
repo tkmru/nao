@@ -106,7 +106,8 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(['ret'])
         self.register_list = idautils.GetRegisterList()
-        self.register_list.extend(['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp'])
+        self.register_list.extend(['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp',
+                                   'rax', 'rbx', 'rcx', 'rdx', 'rdi', 'rsi', 'rbp', 'rsp'])
 
         f = idaapi.get_func(ea)
         self.fc = idaapi.FlowChart(f)

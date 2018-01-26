@@ -10,7 +10,7 @@ def check_deadcode(instruction_list):
     all_opcodes = make_opcodes(instruction_list)
 
     # ready to unicorn
-    emu = Uc(UC_ARCH_X86, UC_MODE_32)
+    emu = Uc(UC_ARCH_X86, UC_MODE_64)
     page_address = begin_address - begin_address % 0x1000
     emu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
 
@@ -21,7 +21,6 @@ def check_deadcode(instruction_list):
 
     except UcError:
         return instruction_list
-
 
 
 def check_exceptional_ins(disasm):
@@ -68,7 +67,7 @@ def judge(emu, instruction_list, origin_registers):
 
             except UcError:
                 del emu
-                emu = Uc(UC_ARCH_X86, UC_MODE_32)
+                emu = Uc(UC_ARCH_X86, UC_MODE_64)
                 page_address = begin_address - begin_address % 0x1000
                 emu.mem_map(page_address, 0x400000)  # map 4MB for this emulation
 
@@ -84,25 +83,27 @@ def emulate(emu, begin_address, opcodes):
     emu.reg_write(UC_X86_REG_EBP, begin_address + 0x200100)
 
     # initialize registers
-    emu.reg_write(UC_X86_REG_EAX, 0x1234)
-    emu.reg_write(UC_X86_REG_EBX, 0x1234)
-    emu.reg_write(UC_X86_REG_ECX, 0x1234)
-    emu.reg_write(UC_X86_REG_EDX, 0x1234)
-    emu.reg_write(UC_X86_REG_EDI, 0x1234)
-    emu.reg_write(UC_X86_REG_ESI, 0x1234)
+    emu.reg_write(UC_X86_REG_RAX, 0x1234)
+    emu.reg_write(UC_X86_REG_RBX, 0x1234)
+    emu.reg_write(UC_X86_REG_RCX, 0x1234)
+    emu.reg_write(UC_X86_REG_RDX, 0x1234)
+    emu.reg_write(UC_X86_REG_RDI, 0x1234)
+    emu.reg_write(UC_X86_REG_RSI, 0x1234)
+    emu.reg_write(UC_X86_REG_R8,  0x1234)
+    emu.reg_write(UC_X86_REG_R9,  0x1234)
 
     # initialize flags
     emu.reg_write(UC_X86_REG_EFLAGS, 0x0)
 
     emu.emu_start(begin_address, begin_address + len(opcodes))
 
-    r_eax = emu.reg_read(UC_X86_REG_EAX)
-    r_ebx = emu.reg_read(UC_X86_REG_EBX)
-    r_ecx = emu.reg_read(UC_X86_REG_ECX)
-    r_edx = emu.reg_read(UC_X86_REG_EDX)
-    r_edi = emu.reg_read(UC_X86_REG_EDI)
-    r_esi = emu.reg_read(UC_X86_REG_ESI)
-    r_esp = emu.reg_read(UC_X86_REG_ESP)
-    r_ebp = emu.reg_read(UC_X86_REG_EBP)
+    r_rax = emu.reg_read(UC_X86_REG_RAX)
+    r_rbx = emu.reg_read(UC_X86_REG_RBX)
+    r_rcx = emu.reg_read(UC_X86_REG_RCX)
+    r_rdx = emu.reg_read(UC_X86_REG_RDX)
+    r_rdi = emu.reg_read(UC_X86_REG_RDI)
+    r_rsi = emu.reg_read(UC_X86_REG_RSI)
+    r_rsp = emu.reg_read(UC_X86_REG_RSP)
+    r_rbp = emu.reg_read(UC_X86_REG_RBP)
 
-    return r_eax, r_ebx, r_ecx, r_edx, r_edi, r_esi, r_esp, r_ebp
+    return r_rax, r_rbx, r_rcx, r_rdx, r_rdi, r_rsi, r_rsp, r_rbp
