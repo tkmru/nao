@@ -106,7 +106,10 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(['ret'])
         self.register_list = idautils.GetRegisterList()
-        self.register_list.extend(['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp',
+        self.register_list.extend(['r8l', 'r9l', 'r10l', 'r11l', 'r12l', 'r13l', 'r14l', 'r15l',
+                                   'r8w', 'r9w', 'r10w', 'r11w', 'r12w', 'r13w', 'r14w', 'r15w',
+                                   'r8d', 'r9d', 'r10d', 'r11d', 'r12d', 'r13d', 'r14d', 'r15d',
+                                   'eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp', 
                                    'rax', 'rbx', 'rcx', 'rdx', 'rdi', 'rsi', 'rbp', 'rsp'])
 
         f = idaapi.get_func(ea)
