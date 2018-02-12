@@ -85,19 +85,34 @@ class AsmColorizer(object):
                     x += 1
             self.add_line(s)
 
+class JumpHandler(idaapi.action_handler_t):
+    def __init__(self, view):
+        idaapi.action_handler_t.__init__(self)
+        self.view = view
+
+    def activate(self, ctx):
+        self.view.jump()
+        return 1
+
+    def update(self, ctx):
+        return idaapi.AST_ENABLE_ALWAYS
 
 class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
 
     def Create(self):
         ea = ScreenEA()
-        if not idaapi.simplecustviewer_t.Create(self, '%s - nao' % (idc.GetFunctionName(ScreenEA()))):
+        if not idaapi.simplecustviewer_t.Create(self, '%s - Nao' % (idc.GetFunctionName(ea))):
             return False
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(['ret'])
         self.register_list = idautils.GetRegisterList()
-        self.register_list.extend(['eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp'])
+        self.register_list.extend(['r8l', 'r9l', 'r10l', 'r11l', 'r12l', 'r13l', 'r14l', 'r15l',
+                                   'r8w', 'r9w', 'r10w', 'r11w', 'r12w', 'r13w', 'r14w', 'r15w',
+                                   'r8d', 'r9d', 'r10d', 'r11d', 'r12d', 'r13d', 'r14d', 'r15d',
+                                   'eax', 'ebx', 'ecx', 'edx', 'edi', 'esi', 'ebp', 'esp', 
+                                   'rax', 'rbx', 'rcx', 'rdx', 'rdi', 'rsi', 'rbp', 'rsp'])
 
-        f = idaapi.get_func(ScreenEA())
+        f = idaapi.get_func(ea)
         self.fc = idaapi.FlowChart(f)
         self.block_list = []
         for block in self.fc:
@@ -105,8 +120,15 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
 
         self.load(ea)
 
-        self.id_jmp = self.AddPopupMenu('Jump')
-
+        action_desc = idaapi.action_desc_t(
+            'nao:jump',     # The action name.
+            'Jump',         # The action text.
+            JumpHandler(self),  # The action handler.
+            '',             # Optional: the action shortcut
+            '',             # Optional: the action tooltip (available in menus/toolbar)
+            )               # Optional: the action icon (shows when in menus/toolbars) use numbers 1-255
+        idaapi.register_action(action_desc)
+        idaapi.attach_action_to_popup(self.GetWidget(), None, 'nao:jump', None)
         return True
 
     def jump(self):
@@ -195,34 +217,26 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
     def as_directive(self, s):
         return idaapi.COLSTR(s, idaapi.SCOLOR_KEYWORD)
 
-    def OnPopupMenu(self, menu_id):
-        '''
-        A context (or popup) menu item was executed.
-        @param menu_id: ID previously registered with AddPopupMenu()
-        @return: Boolean
-        '''
-        if self.id_jmp == menu_id:
-            return self.jump()
-        return False
 
+class nao_t(idaapi.plugin_t):
 
-def create_view():
-    view = PluginUI()
-    view.Create()
-    view.Show()
-    print('eliminated!!')
+    flags = 0
+    comment = "Eliminate dead code"
+    help = ''
+    wanted_name = 'Nao'
+    wanted_hotkey = 'Shift-D'
 
+    def init(self):
+        return idaapi.PLUGIN_KEEP
 
-def main():
-    ex_addmenu_item_ctx = idaapi.add_menu_item('Edit/Plugins/', 'eliminate dead code', 'Shift-D', 0, create_view, ())
-    if ex_addmenu_item_ctx is None:
-        print('Failed to add nao.')
+    def term(self):
+        return None
 
-    else:
-        print('Successfully added nao!!')
+    def run(self, arg):
+        view = PluginUI()
+        view.Create()
+        view.Show()
+        print('eliminated!!')
 
-    return True
-
-
-if __name__ == '__main__':
-    view = main()
+def PLUGIN_ENTRY():
+    return nao_t()
