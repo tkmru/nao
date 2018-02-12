@@ -3,6 +3,7 @@
 
 from unicorn import *
 from unicorn.x86_const import *
+import idaapi
 import copy
 
 def is_64bit():
