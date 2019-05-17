@@ -10,7 +10,7 @@ import idaapi
 import idautils
 import idc
 import struct
-import eliminate
+import nao.eliminate as eliminate
 
 
 class AsmColorizer(object):
