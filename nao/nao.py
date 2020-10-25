@@ -11,7 +11,8 @@ import idautils
 import idc
 import struct
 import eliminate
-
+import ida_bytes
+import ida_name
 
 class AsmColorizer(object):
 
@@ -100,8 +101,8 @@ class JumpHandler(idaapi.action_handler_t):
 class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
 
     def Create(self):
-        ea = ScreenEA()
-        if not idaapi.simplecustviewer_t.Create(self, '%s - Nao' % (idc.GetFunctionName(ea))):
+        ea = idc.get_screen_ea()
+        if not idaapi.simplecustviewer_t.Create(self, '%s - Nao' % (idc.get_func_name(ea))):
             return False
         self.instruction_list = idautils.GetInstructionList()
         self.instruction_list.extend(['ret'])
@@ -116,7 +117,7 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
         self.fc = idaapi.FlowChart(f)
         self.block_list = []
         for block in self.fc:
-            self.block_list.append(format(block.startEA, 'x').upper())
+            self.block_list.append(format(block.start_ea, 'x').upper())
 
         self.load(ea)
 
@@ -146,26 +147,26 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
 
     def eliminate_deadcode(self, ea):
         instruction_list = []
-        address_list = list(FuncItems(ea))
+        address_list = list(idautils.FuncItems(ea))
         lines = ''
         for i, row_begin_addr in enumerate(address_list):
-            disasm = GetDisasm(row_begin_addr)
+            disasm = idc.GetDisasm(row_begin_addr)
             lines += disasm + '\n'
             try:
                 next_row_begin_addr = address_list[i + 1]
                 size = next_row_begin_addr - row_begin_addr
                 if size < 0:  # when row_begin_addr is end basic block
-                    row_end_addr = FindFuncEnd(row_begin_addr)
+                    row_end_addr = idc.find_func_end(row_begin_addr)
                     size = row_end_addr - row_begin_addr
 
             except IndexError:  # when next_row_begin_addr is not found
                 last_row_begin_addr = row_begin_addr
-                last_row_end_addr = FindFuncEnd(last_row_begin_addr)
+                last_row_end_addr = idc.find_func_end(last_row_begin_addr)
                 size = last_row_end_addr - last_row_begin_addr
 
             row_opcode = ''
             for i in range(size):
-                int_opcode = GetOriginalByte(row_begin_addr + i)
+                int_opcode = ida_bytes.get_original_byte(row_begin_addr + i)
                 opcode = struct.pack('B', int_opcode)
                 row_opcode += opcode
 
@@ -192,8 +193,8 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
         target = s.rsplit(':')[0].replace('\x01\x0c', '').replace('\x02\x0c', '')
         if target in self.block_list:
             self.AddLine('----------------------------------------------------------------')
-            if idc.Name(int(target, 16)) != '':
-                self.AddLine(idc.Name(int(target, 16)))
+            if idc.get_name(int(target, 16), ida_name.GN_VISIBLE) != '':
+                self.AddLine(idc.get_name(int(target, 16), ida_name.GN_VISIBLE))
         self.AddLine(s)
 
     def as_comment(self, s):
