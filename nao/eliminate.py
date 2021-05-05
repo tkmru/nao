@@ -121,7 +121,7 @@ def check_exceptional_ins(disasm):
     return False
 
 def make_opcodes(instruction_list):
-    all_opcodes = ''
+    all_opcodes = b''
     for i in instruction_list:
         opcode = i[1]
         disasm = i[2]

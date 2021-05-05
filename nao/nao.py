@@ -164,7 +164,7 @@ class PluginUI(idaapi.simplecustviewer_t, AsmColorizer):
                 last_row_end_addr = idc.find_func_end(last_row_begin_addr)
                 size = last_row_end_addr - last_row_begin_addr
 
-            row_opcode = ''
+            row_opcode = b''
             for i in range(size):
                 int_opcode = ida_bytes.get_original_byte(row_begin_addr + i)
                 opcode = struct.pack('B', int_opcode)
